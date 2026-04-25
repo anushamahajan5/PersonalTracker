@@ -8,7 +8,6 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Fallback bearer header support (in case cross-site cookies blocked)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -16,12 +15,12 @@ api.interceptors.request.use((config) => {
 });
 
 export function formatApiError(detail) {
-  if (detail == null) return "Something went wrong"; // Default error message
-  if (typeof detail === "string") return detail; // If detail is a string, return it directly
+  if (detail == null) return "Something went wrong"; 
+  if (typeof detail === "string") return detail; 
   if (Array.isArray(detail))
     return detail
       .map((e) => (e && typeof e.msg === "string" ? e.msg : JSON.stringify(e)))
-      .join(" "); // Join array of error messages
+      .join(" "); 
   if (detail && typeof detail.msg === "string") return detail.msg; // If detail has a 'msg' property, return it
   return String(detail); // Fallback to string conversion
 }

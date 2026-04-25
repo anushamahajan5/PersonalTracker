@@ -49,19 +49,30 @@ export default function Tasks() {
           <h1 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight">Tasks</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md border overflow-hidden" data-testid="view-switch">
+          <div className="flex rounded-md border border-[hsl(var(--border))] overflow-hidden bg-[hsl(var(--card))]" data-testid="view-switch">
             <button
-              onClick={() => setView("list")} // Switch to list view
-              className={`px-3 py-2 text-sm flex items-center gap-2 ${view === "list" ? "bg-[hsl(var(--secondary))]" : ""}`}
+              onClick={() => setView("list")}
+              className={`px-3 py-2 text-sm flex items-center gap-2 transition-colors ${view === "list"
+                  ? "bg-[hsl(var(--secondary))] text-foreground font-medium"
+                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--secondary))/50]"
+                }`}
               data-testid="view-list"
-            ><LayoutList size={14}/> List</button>
+            >
+              <LayoutList size={14} /> List
+            </button>
             <button
-              onClick={() => setView("kanban")} // Switch to kanban view
+              onClick={() => setView("kanban")}
+              className={`px-3 py-2 text-sm flex items-center gap-2 border-l border-[hsl(var(--border))] transition-colors ${view === "kanban"
+                  ? "bg-[hsl(var(--secondary))] text-foreground font-medium"
+                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--secondary))/50]"
+                }`}
               data-testid="view-kanban"
-            ><LayoutGrid size={14}/> Kanban</button>
+            >
+              <LayoutGrid size={14} /> Kanban
+            </button>
           </div>
           <button onClick={download} className="px-3 py-2 rounded-md border text-sm flex items-center gap-2" data-testid="export-tasks-button">
-            <Download size={14}/> CSV
+            <Download size={14} /> CSV
           </button>
         </div>
       </div>
@@ -80,7 +91,7 @@ export default function Tasks() {
         <input type="date" value={due} onChange={(e) => setDue(e.target.value)} // Due date input
           className="h-10 px-2 rounded-md bg-[hsl(var(--background))] border" data-testid="task-due-input" />
         <button type="submit" className="h-10 px-4 rounded-md bg-white text-black font-medium flex items-center gap-2" data-testid="task-create-button">
-          <Plus size={14}/> Add
+          <Plus size={14} /> Add
         </button>
       </form>
 
@@ -108,7 +119,7 @@ export default function Tasks() {
                 {STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
               <button onClick={() => remove(t.id)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))]" data-testid={`task-delete-${t.id}`}>
-                <Trash2 size={16}/>
+                <Trash2 size={16} />
               </button>
             </div>
           ))}

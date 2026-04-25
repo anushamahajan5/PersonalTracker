@@ -4,7 +4,7 @@ import { api, formatApiError } from "./api";
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // null = loading, false = anon
+  const [user, setUser] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true); 
 
@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
       } catch {
         setUser(false);
       } finally {
-        setLoading(false); // Done checking
+        setLoading(false); 
       }
     };
     initAuth();
@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     setError("");
     try {
-      const { data } = await api.post("/auth/login", { email, password }); // Send login request
+      const { data } = await api.post("/auth/login", { email, password }); 
       if (data.access_token) localStorage.setItem("access_token", data.access_token);
       setUser(data);
       return true;

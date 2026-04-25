@@ -28,9 +28,11 @@ export default function AppShell({ children }) {
         data-testid="sidebar"
       >
         <div className="h-16 px-6 flex items-center justify-between border-b">
-          <Link href="/app/dashboard" className="font-heading text-lg font-semibold tracking-tight" data-testid="brand-link">
-            Prototask
-          </Link> {/* Brand link */}
+          {typeof "/app/dashboard" === 'string' && ( // Defensive check for href
+            <Link href="/app/dashboard" className="font-heading text-lg font-semibold tracking-tight" data-testid="brand-link">
+              Prototask
+            </Link>
+          )} {/* Brand link */}
           <button className="lg:hidden" onClick={() => setOpen(false)} data-testid="sidebar-close">
             <X size={18} /> {/* Close button for mobile sidebar */}
           </button>

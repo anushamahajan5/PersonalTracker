@@ -11,8 +11,8 @@ export function ThemeProvider({ children }) {
   });
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
-    if (typeof window !== 'undefined') { // Guard localStorage access
-      localStorage.setItem("theme", theme); // Store current theme in local storage
+    if (typeof window !== 'undefined') { 
+      localStorage.setItem("theme", theme);
     }
   }, [theme]);
   const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark")); // Toggle between dark and light themes

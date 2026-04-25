@@ -134,3 +134,8 @@
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
 }
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.04em; /* Match Emergent style more closely */
+}
