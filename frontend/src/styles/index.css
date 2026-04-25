@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Outfit", sans-serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-border: hsl(var(--border));
+}
+
+:root {
+    --bg: 0 0% 10%;         /* #191919 */
+    --surface: 0 0% 13%;     /* #202020 */
+    --border: 0 0% 20%;      /* #333 */
+    --border-hover: 0 0% 32%;
+    --text: 0 0% 90%;
+    --muted: 0 0% 64%;
+    --muted-2: 0 0% 45%;
+    --accent: 0 0% 100%;
+    --accent-fg: 0 0% 7%;
+
+    --background: 0 0% 10%;
+    --foreground: 0 0% 90%;
+    --card: 0 0% 13%;
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 90%;
+    --muted-bg: 0 0% 16%;
+    --muted-foreground: 0 0% 64%;
+    --accent-bg: 0 0% 17%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 73% 63%;
+    --destructive-foreground: 0 0% 98%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 60%;
+    --radius: 0.5rem;
+}
+
+.light {
+    --background: 0 0% 99%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted-foreground: 0 0% 40%;
+    --accent-foreground: 0 0% 10%;
+    --input: 0 0% 88%;
+    --border: 0 0% 88%;
+    --ring: 0 0% 40%;
+}
+
+@layer base {
+    * { border-color: hsl(var(--border)); }
+    html, body, #root { height: 100%; }
+    body {
+        margin: 0;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+    }
+    h1, h2, h3, h4, h5 {
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: -0.02em;
+    }
+}
+
+/* Custom Utilities */
+@layer utilities {
+    .font-heading { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+    
+    .label-tiny {
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+    }
+
+    /* Page fade in */
+    .fade-in {
+        animation: fadeIn 250ms ease-out both;
+    }
+
+    .stagger > * {
+        animation: fadeIn 300ms ease-out both;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+.light ::-webkit-scrollbar-thumb { background: #dcdcdc; }
+
+/* Dashboard Specifics */
+.heat-0 { background: #2a2a2a; }
+.heat-1 { background: #1b4232; }
+.heat-2 { background: #255a44; }
+.heat-3 { background: #2c7a55; }
+.heat-4 { background: #36b172; }
+.light .heat-0 { background: #ebedf0; }
+.light .heat-1 { background: #c6e6d1; }
+.light .heat-2 { background: #7bc796; }
+.light .heat-3 { background: #4ba76b; }
+.light .heat-4 { background: #2f8c50; }
+
+.kanban-col { min-height: 60vh; }
+
+.note-editor {
+    min-height: 400px;
+    outline: none;
+    line-height: 1.7;
+}
+.note-editor:empty:before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+}

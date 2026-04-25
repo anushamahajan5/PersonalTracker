@@ -1,0 +1,44 @@
+@import "tailwindcss/preflight";
+@tailwind utilities;
+
+:root {
+  --background: #121212;
+  --foreground: #ffffff;
+  --card-bg: #1e1e1e;
+  --accent: #facc15; /* Yellow/Gold for streaks/icons */
+  --muted: #a1a1aa;
+  --border: #27272a;
+}
+
+@layer base {
+  body {
+    @apply bg-[#121212] text-white antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom Scrollbar for the Dashboard look */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-[#121212];
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800 rounded-full hover:bg-zinc-700;
+  }
+}
+
+@layer components {
+  /* Match the card style seen in your dashboard */
+  .dashboard-card {
+    @apply bg-[#1e1e1e] border border-zinc-800 rounded-xl p-6 transition-all hover:border-zinc-700;
+  }
+
+  .stat-label {
+    @apply text-xs uppercase tracking-widest text-zinc-500 font-bold;
+  }
+
+  .stat-value {
+    @apply text-4xl font-black mt-2;
+  }
+}
