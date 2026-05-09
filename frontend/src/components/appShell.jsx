@@ -2,8 +2,8 @@ import Link from "next/link"; // Use next/link for client-side transitions
 import { useRouter } from "next/router"; // Use next/router for active state and programmatic navigation
 import { useState } from "react"; // State for mobile sidebar open/close
 import { useAuth } from "../lib/auth";
-import { useTheme } from "../lib/theme"; // Import Lucide icons
-import { LayoutDashboard, CheckSquare, FileText, Flame, Apple, LogOut, Moon, Sun, Menu, X, Dumbbell, ShoppingCart, Wallet, Palette } from "lucide-react";
+import { useTheme } from "../lib/theme";
+import { LayoutDashboard, CheckSquare, FileText, Flame, Apple, LogOut, Moon, Sun, Menu, X, Dumbbell, ShoppingCart, Wallet, Palette, CalendarDays } from "lucide-react"; // Import Lucide icons, added CalendarDays
 
 const NAV = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -15,13 +15,14 @@ const NAV = [
   { to: "/app/shopping", label: "Shopping", icon: ShoppingCart },
   { to: "/app/expenses", label: "Expenses", icon: Wallet },
   { to: "/app/hobbies", label: "Hobbies", icon: Palette },
+  { to: "/app/calendar", label: "Calendar", icon: CalendarDays },
 ];
 
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
-  const router = useRouter(); // Next.js router instance
+  const router = useRouter(); 
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">

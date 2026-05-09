@@ -53,10 +53,10 @@ export default function Dashboard() {
       <div>
         <p className="label-tiny mb-2">Today</p>
         <h1 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight">
-          {greet()}, ready to ship?
+          {greet()}, ready for the day?
         </h1>
         <p className="text-[hsl(var(--muted-foreground))] mt-2">
-          {d.task_stats.completion_pct}% of tasks shipped all-time · {d.overall_streak}-day streak
+          {d.task_stats.completion_pct}% of tasks completed · {d.overall_streak}-day streak
         </p>
       </div>
 
