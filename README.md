@@ -3,8 +3,8 @@
 Prototask is a clean, minimal, and mobile-friendly personal dashboard designed to help you manage your daily tasks, track habits, monitor nutrition, and organize notes all in one place. Inspired by Notion and modern habit trackers, it aims to provide a seamless and efficient productivity experience. This project was developed with a focus on modern web technologies, robust system design, and a user-centric approach.
 
 
-Frontend deployed URL: personal-tracker-fawn.vercel.app
-Backend deployed URL: https://prototask-backend.onrender.com
+- Frontend deployed URL: [personal-tracker-fawn.vercel.app](https://personal-tracker-fawn.vercel.app/login)
+- Backend deployed URL: [https://prototask-backend.onrender.com](https://personaltracker-2.onrender.com)
 
 ## Features
 
