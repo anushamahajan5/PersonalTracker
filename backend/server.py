@@ -224,6 +224,18 @@ class HobbyEntryPatch(BaseModel):
     notes: Optional[str] = None
 
 
+# Calendar
+class CalendarEventIn(BaseModel):
+    date: str # YYYY-MM-DD
+    text: str
+
+
+class CalendarEventPatch(BaseModel):
+    date: Optional[str] = None
+    text: Optional[str] = None
+
+
+
 # -------- App setup --------
 app = FastAPI(title="Prototask API")
 api = APIRouter(prefix="/api")
@@ -864,6 +876,45 @@ async def hobby_stats(user: dict = Depends(get_current_user), days: int = 30, mo
     }
 
 
+# -------- Calendar --------
+@api.get("/calendar/events")
+async def list_calendar_events(user: dict = Depends(get_current_user), month: Optional[str] = None):
+    query = {"user_id": user["id"]}
+    if month:
+        # Filter events for the specified month
+        year, mon = map(int, month.split('-'))
+        start_date = date(year, mon, 1)
+        # Calculate the last day of the month
+        next_month = date(year, mon, 1) + timedelta(days=32) # Go beyond to ensure we get last day
+        end_date = date(next_month.year, next_month.month, 1) - timedelta(days=1)
+        
+        query["date"] = {"$gte": start_date.isoformat(), "$lte": end_date.isoformat()}
+    
+    return await db.calendar_events.find(query, {"_id": 0}).sort("date", 1).to_list(2000)
+
+
+@api.post("/calendar/events")
+async def create_calendar_event(body: CalendarEventIn, user: dict = Depends(get_current_user)):
+    doc = {"id": str(uuid.uuid4()), "user_id": user["id"], **body.model_dump(),
+           "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.calendar_events.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api.delete("/calendar/events/{eid}")
+async def delete_calendar_event(eid: str, user: dict = Depends(get_current_user)):
+    res = await db.calendar_events.delete_one({"id": eid, "user_id": user["id"]})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Calendar event not found")
+    return {"ok": True}
+
+
+
+
+
+
+
 # -------- Dashboard --------
 @api.get("/dashboard")
 async def dashboard(user: dict = Depends(get_current_user)):
@@ -994,6 +1045,7 @@ async def on_startup():
     await db.shopping_items.create_index("user_id")
     await db.expenses.create_index([("user_id", 1), ("date", -1)])
     await db.hobby_entries.create_index([("user_id", 1), ("date", -1)])
+    await db.calendar_events.create_index([("user_id", 1), ("date", 1)]) # New index for calendar events
 
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.com")
     admin_pw = os.environ.get("ADMIN_PASSWORD", "admin123")

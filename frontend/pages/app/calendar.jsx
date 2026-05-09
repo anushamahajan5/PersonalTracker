@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, X, Trash2 } from "lucide-react";
+import { api } from "../../src/lib/api"; // Import the API utility
 
 const MOTIVATIONAL_QUOTES = [
   "The best way to predict the future is to create it.",
@@ -16,14 +17,21 @@ const MOTIVATIONAL_QUOTES = [
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState({}); // { 'YYYY-MM-DD': ['Event 1', 'Event 2'] }
+  const [events, setEvents] = useState([]); // Now an array of event objects from backend
   const [selectedDay, setSelectedDay] = useState(null); // Date object for selected day
   const [newEventText, setNewEventText] = useState("");
   const [motivationalQuote, setMotivationalQuote] = useState("");
 
+  const loadEvents = async () => {
+    const month = currentDate.toISOString().slice(0, 7); // YYYY-MM
+    const { data } = await api.get("/calendar/events", { params: { month } });
+    setEvents(data);
+  };
+
   useEffect(() => {
     setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
-  }, [currentDate]); // Change quote when month changes
+    loadEvents(); // Load events for the current month
+  }, [currentDate]); // Reload events and change quote when month changes
 
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday
@@ -55,6 +63,15 @@ export default function Calendar() {
     return weeks;
   }, [currentDate]);
 
+  // Group events by date for easy lookup in the calendar grid
+  const eventsByDate = useMemo(() => {
+    const grouped = {};
+    events.forEach(event => {
+      (grouped[event.date] = grouped[event.date] || []).push(event);
+    });
+    return grouped;
+  }, [currentDate]);
+
   const goToPreviousMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
@@ -71,19 +88,18 @@ export default function Calendar() {
   const handleAddEvent = () => {
     if (newEventText.trim() && selectedDay) {
       const dateString = selectedDay.toISOString().slice(0, 10);
-      setEvents(prev => ({
-        ...prev,
-        [dateString]: [...(prev[dateString] || []), newEventText.trim()]
-      }));
+      api.post("/calendar/events", { date: dateString, text: newEventText.trim() })
+        .then(() => {
+          setNewEventText("");
+          loadEvents(); // Reload events after adding
+        });
       setNewEventText("");
     }
   };
 
-  const handleDeleteEvent = (dateString, eventIndex) => {
-    setEvents(prev => ({
-      ...prev,
-      [dateString]: prev[dateString].filter((_, i) => i !== eventIndex)
-    }));
+  const handleDeleteEvent = (eventId) => {
+    api.delete(`/calendar/events/${eventId}`)
+      .then(() => loadEvents()); // Reload events after deleting
   };
 
   const formattedMonthYear = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -117,7 +133,8 @@ export default function Calendar() {
           {renderCalendarDays.flat().map((day, index) => {
             const dateString = day ? day.toISOString().slice(0, 10) : null;
             const isToday = dateString === today;
-            const hasEvents = events[dateString] && events[dateString].length > 0;
+            const dayEvents = eventsByDate[dateString] || [];
+            const hasEvents = dayEvents.length > 0;
             const isSelected = selectedDay && dateString === selectedDay.toISOString().slice(0, 10);
 
             return (
@@ -125,7 +142,7 @@ export default function Calendar() {
                 key={index}
                 className={`relative h-24 p-1 text-sm rounded-md flex flex-col items-center justify-start cursor-pointer
                   ${day ? 'bg-[hsl(var(--background))] hover:bg-[hsl(var(--secondary))]' : 'bg-transparent'}
-                  ${isToday ? 'border border-foreground' : ''}
+                  ${isToday ? 'border border-foreground' : ''} 
                   ${isSelected ? 'ring-2 ring-foreground' : ''}
                 `}
                 onClick={() => day && handleDayClick(day)}
@@ -134,13 +151,13 @@ export default function Calendar() {
                 {day && <span className="font-semibold">{day.getDate()}</span>}
                 {hasEvents && (
                   <div className="absolute bottom-1 left-1 right-1 flex flex-wrap gap-0.5">
-                    {events[dateString].slice(0, 2).map((event, i) => (
+                    {dayEvents.slice(0, 2).map((event, i) => (
                       <span key={i} className="text-xs bg-blue-500 text-white px-1 rounded-sm truncate max-w-full">
-                        {event}
+                        {event.text}
                       </span>
                     ))}
-                    {events[dateString].length > 2 && (
-                      <span className="text-xs bg-gray-500 text-white px-1 rounded-sm">+{events[dateString].length - 2}</span>
+                    {dayEvents.length > 2 && (
+                      <span className="text-xs bg-gray-500 text-white px-1 rounded-sm">+{dayEvents.length - 2}</span>
                     )}
                   </div>
                 )}
@@ -159,15 +176,15 @@ export default function Calendar() {
             </button>
           </div>
           <div className="space-y-2">
-            {events[selectedDay.toISOString().slice(0, 10)]?.map((event, index) => (
+            {eventsByDate[selectedDay.toISOString().slice(0, 10)]?.map((event, index) => (
               <div key={index} className="flex items-center justify-between p-2 rounded-md bg-[hsl(var(--background))]" data-testid={`event-item-${index}`}>
-                <span>{event}</span>
-                <button onClick={() => handleDeleteEvent(selectedDay.toISOString().slice(0, 10), index)} className="text-red-400 hover:text-red-300" data-testid={`delete-event-${index}`}>
+                <span>{event.text}</span>
+                <button onClick={() => handleDeleteEvent(event.id)} className="text-red-400 hover:text-red-300" data-testid={`delete-event-${index}`}>
                   <Trash2 size={16} />
                 </button>
               </div>
-            ))}
-            {(!events[selectedDay.toISOString().slice(0, 10)] || events[selectedDay.toISOString().slice(0, 10)].length === 0) && (
+            ))} 
+            {(!eventsByDate[selectedDay.toISOString().slice(0, 10)] || eventsByDate[selectedDay.toISOString().slice(0, 10)].length === 0) && (
               <p className="text-sm text-[hsl(var(--muted-foreground))]">No events for this day.</p>
             )}
           </div>
