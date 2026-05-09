@@ -2,8 +2,8 @@ import Link from "next/link"; // Use next/link for client-side transitions
 import { useRouter } from "next/router"; // Use next/router for active state and programmatic navigation
 import { useState } from "react"; // State for mobile sidebar open/close
 import { useAuth } from "../lib/auth";
-import { useTheme } from "../lib/theme";
-import { LayoutDashboard, CheckSquare, FileText, Flame, Apple, LogOut, Moon, Sun, Menu, X } from "lucide-react"; // Import Lucide icons
+import { useTheme } from "../lib/theme"; // Import Lucide icons
+import { LayoutDashboard, CheckSquare, FileText, Flame, Apple, LogOut, Moon, Sun, Menu, X, Dumbbell, ShoppingCart, Wallet, Palette } from "lucide-react";
 
 const NAV = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -11,6 +11,10 @@ const NAV = [
   { to: "/app/notes", label: "Notes", icon: FileText },
   { to: "/app/habits", label: "Habits", icon: Flame },
   { to: "/app/nutrition", label: "Nutrition", icon: Apple },
+  { to: "/app/gym", label: "Gym", icon: Dumbbell },
+  { to: "/app/shopping", label: "Shopping", icon: ShoppingCart },
+  { to: "/app/expenses", label: "Expenses", icon: Wallet },
+  { to: "/app/hobbies", label: "Hobbies", icon: Palette },
 ];
 
 export default function AppShell({ children }) {

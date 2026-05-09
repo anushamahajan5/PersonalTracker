@@ -1,18 +1,41 @@
 import { useEffect, useState, useMemo } from "react";
 import { api } from "../../src/lib/api"; // Corrected import path
-import { Plus, Trash2, Flame, Download } from "lucide-react";
+import { Plus, Trash2, Flame, Download, Search } from "lucide-react";
+import { thisMonth } from "../../src/lib/utils"; // Import thisMonth
 
 export default function Habits() {
   const [habits, setHabits] = useState([]);
   const [heat, setHeat] = useState([]);
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState(""); // State for habit emoji
+  const [month, setMonth] = useState(thisMonth()); // New state for month filter
+  const [habitNameFilter, setHabitNameFilter] = useState(""); // New state for habit name search
 
   const load = async () => {
-    const [h, m] = await Promise.all([api.get("/habits"), api.get("/habits/heatmap", { params: { days: 140 } })]);
+    const habitParams = {};
+    if (habitNameFilter) {
+      habitParams.name = habitNameFilter;
+    }
+
+    const heatmapParams = { days: 140 }; // Default to 140 days if no month filter
+    if (month) {
+      // If month is selected, calculate days for that month for heatmap
+      const [year, mon] = month.split('-').map(Number);
+      const firstDay = new Date(year, mon - 1, 1);
+      const lastDay = new Date(year, mon, 0);
+      const diffTime = Math.abs(lastDay.getTime() - firstDay.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end day
+      heatmapParams.days = diffDays;
+      heatmapParams.month = month; // Pass month to backend for heatmap
+    }
+
+    const [h, m] = await Promise.all([
+      api.get("/habits", { params: habitParams }),
+      api.get("/habits/heatmap", { params: heatmapParams }),
+    ]);
     setHabits(h.data); setHeat(m.data);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [month, habitNameFilter]); // Add month and habitNameFilter to dependencies
 
   const create = async (e) => {
     e.preventDefault();
@@ -25,13 +48,33 @@ export default function Habits() {
   const download = () => window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/export/habits`, "_blank"); // Export habits to CSV
 
   const weeks = useMemo(() => {
+    // Ensure heat data is an array before slicing
+    const heatData = Array.isArray(heat) ? heat : [];
     const w = [];
-    for (let i = 0; i < heat.length; i += 7) w.push(heat.slice(i, i + 7));
+    for (let i = 0; i < heatData.length; i += 7) w.push(heatData.slice(i, i + 7));
     return w;
   }, [heat]);
 
   return ( // Main container for the Habits page
-    <div className="max-w-6xl mx-auto space-y-8 fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 max-w-6xl mx-auto" data-testid="habits-root">
+      <aside className="space-y-4">
+        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="px-3 py-2 rounded-md bg-background border border-[hsl(var(--border))]" data-testid="habit-month-filter" />
+
+        <div>
+          <p className="label-tiny mb-2">Search habits</p>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" size={14}/>
+            <input value={habitNameFilter} onChange={(e) => setHabitNameFilter(e.target.value)} placeholder="Search by name..."
+              className="w-full h-10 pl-9 pr-3 rounded-md bg-[hsl(var(--card))] border outline-none focus:border-[hsl(var(--ring))]"
+              data-testid="habit-search-input"/>
+          </div>
+        </div>
+
+        {/* Potentially add habit stats here if they were not already in the main content */}
+        {/* For now, keeping the main stats in the main content area */}
+      </aside>
+
+      <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <p className="label-tiny mb-2">Consistency</p>
@@ -111,6 +154,7 @@ export default function Habits() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

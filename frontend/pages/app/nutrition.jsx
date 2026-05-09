@@ -13,7 +13,8 @@ export default function Nutrition() {
   const [fats, setFats] = useState(""); // State for fats input
   const [kcal, setKcal] = useState(""); // State for calories input
   const [aiBusy, setAiBusy] = useState(false);
-  const [goal, setGoal] = useState(user?.protein_goal || 120);
+  // Initialize goal to empty string if user.protein_goal is undefined or null
+  const [goal, setGoal] = useState(user?.protein_goal === undefined || user?.protein_goal === null ? "" : user.protein_goal);
   const [aiText, setAiText] = useState(""); // State for AI food input text
   const load = async () => {
     const [e, h] = await Promise.all([
@@ -23,7 +24,12 @@ export default function Nutrition() {
     setEntries(e.data); setHistory(h.data);
   };
   useEffect(() => { load(); }, []);
-  useEffect(() => { if (user) setGoal(user.protein_goal); }, [user]);
+  useEffect(() => {
+    if (user) {
+      // Update goal state, showing empty string if protein_goal is undefined or null
+      setGoal(user.protein_goal === undefined || user?.protein_goal === null ? "" : user.protein_goal);
+    }
+  }, [user]);
 
   const add = async (e) => {
     e.preventDefault();
@@ -59,12 +65,16 @@ export default function Nutrition() {
   }; // Function to fill form fields using AI
 
   const saveGoal = async () => {
-    await api.patch("/auth/me", { protein_goal: parseInt(goal) || 120 });
+    const newGoal = parseInt(goal);
+    // Send null if the input is empty or results in NaN, so the backend can unset the field
+    await api.patch("/auth/me", { protein_goal: isNaN(newGoal) ? null : newGoal });
     refreshUser();
   };
 
   const totals = entries.reduce(
     (a, e) => ({
+      // Ensure e.protein_g, etc., are treated as numbers, defaulting to 0 if null/undefined
+      // This is a good practice, though Pydantic models usually ensure types.
       protein: a.protein + (e.protein_g || 0),
       carbs: a.carbs + (e.carbs_g || 0),
       fats: a.fats + (e.fats_g || 0),
@@ -73,7 +83,9 @@ export default function Nutrition() {
     { protein: 0, carbs: 0, fats: 0, kcal: 0 }
   );
 
-  const pct = Math.min(100, Math.round((totals.protein / Math.max(goal, 1)) * 100));
+  // Calculate effective goal, defaulting to 1 to prevent division by zero if goal is not set
+  const effectiveGoal = parseInt(goal) || 1;
+  const pct = Math.min(100, Math.round((totals.protein / effectiveGoal) * 100));
   const download = () => window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/export/nutrition`, "_blank"); // Function to download nutrition data
 
   return (
@@ -94,7 +106,7 @@ export default function Nutrition() {
             <p className="label-tiny">Today</p> {/* Label for today's summary */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-[hsl(var(--muted-foreground))]">Goal</span>
-              <input type="number" value={goal} onChange={(e) => setGoal(e.target.value)} onBlur={saveGoal}
+              <input type="number" value={goal} onChange={(e) => setGoal(e.target.value)} onBlur={saveGoal} // Input for protein goal
                 className="w-20 h-8 px-2 rounded-md bg-[hsl(var(--background))] border text-right" data-testid="protein-goal-input"/> {/* Protein goal input */}
               <span className="text-[hsl(var(--muted-foreground))]">g</span>
             </div>
