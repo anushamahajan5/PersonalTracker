@@ -1020,8 +1020,6 @@ async def on_startup():
 @app.on_event("shutdown")
 async def on_shutdown():
     client.close()
-    return {"done_today": done, "streak": streak}
-
 
 # -------- Protein / Food --------
 @api.get("/protein/entries")
