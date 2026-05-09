@@ -70,7 +70,7 @@ export default function Calendar() {
       (grouped[event.date] = grouped[event.date] || []).push(event);
     });
     return grouped;
-  }, [currentDate]);
+  }, [events]);
 
   const goToPreviousMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
