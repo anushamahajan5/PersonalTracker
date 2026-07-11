@@ -19,12 +19,12 @@ Prototask is a clean, minimal, and mobile-friendly personal dashboard designed t
 *   **Shopping**: Manage shopping lists with items, quantities, categories, and purchased status. Filter by category and status, and clear purchased items.
 *   **Expenses**: Track daily expenses by amount, category, description, and date. View total spent per month and a breakdown by category. Includes an integrated calculator.
 *   **Hobbies**: Log hobby entries with name, date, duration, and notes. Filter by month and hobby name.
-*   **AI Food Parser**: Utilize Claude Sonnet 4.5 via Emergent Universal LLM to intelligently parse natural language food descriptions into macro-nutrient data.
+*   **AI Food Parser**: Utilize Google Gemini API to parse natural language food descriptions into macro-nutrient data intelligently.
 *   **Data Export**: Export tasks, notes, habits, and nutrition data to CSV format.
 *   **Weekly Insights**: Get summaries of tasks completed, habit check-ins, average protein intake, and days protein goal was hit.
 
 ### Design Principles & User Experience
-Prototask's design is guided by principles of minimalism, clarity, and responsiveness:
+Principles of minimalism, clarity, and responsiveness guide Prototask's design:
 *   **Clean & Minimal UI**: A clutter-free interface inspired by Notion, focusing on essential information and actions.
 *   **Mobile-Friendly**: Fully responsive design ensures a seamless experience across various devices, from desktops to smartphones, featuring a mobile sidebar and hamburger menu.
 *   **Dark Mode Default**: Features a dark theme by default with a toggle for a light theme.
@@ -39,7 +39,7 @@ Prototask employs a modern full-stack architecture designed for scalability, per
 *   **React 19**: Chosen for its component-based architecture, enabling reusable UI elements and a declarative approach to building user interfaces.
 *   **Next.js**: A powerful React framework that provides server-side rendering (SSR), static site generation (SSG), and API routes, optimizing performance and SEO. It simplifies routing, code splitting, and asset optimization.
 *   **Tailwind CSS**: A utility-first CSS framework that allows for rapid UI development directly in JSX. Its highly customizable nature and focus on responsive design make it ideal for creating a unique and adaptive user experience.
-*   **shadcn/ui**: A collection of re-usable components built with Tailwind CSS and React. It provides accessible and customizable UI primitives, accelerating development while maintaining a consistent design language.
+*   **shadcn/ui**: A collection of reusable components built with Tailwind CSS and React. It provides accessible and customizable UI primitives, accelerating development while maintaining a consistent design language.
 *   **lucide-react**: A lightweight and customizable icon library that integrates seamlessly with React projects, offering a wide range of vector icons.
 *   **State Management**: Utilizes `AuthContext` and `ThemeContext` for global state management related to user authentication and theme preferences, ensuring a consistent experience across the application.
 *   **API Communication**: `axios` is used for making HTTP requests to the backend, configured with cookie-based authentication and a bearer token fallback for secure and flexible API interactions.
@@ -51,7 +51,7 @@ Prototask employs a modern full-stack architecture designed for scalability, per
 *   **Authentication**:
     *   **JWT (JSON Web Tokens)**: Used for stateless authentication, providing a secure and scalable method for verifying user identity across requests. Tokens are managed via secure, HTTP-only cookies with a bearer token fallback.
     *   **bcrypt**: A strong, adaptive password hashing function used to securely store user passwords, protecting against brute-force attacks.
-*   **AI Integration**: Integrates with `emergentintegrations` to access advanced Large Language Models (LLMs) like Claude Sonnet 4.5. This powers features like the AI Food Parser, allowing natural language input for macro-nutrient estimation.
+*   **AI Integration**: Integrates with the Google Gemini API to access advanced Large Language Models (LLMs). This power features like the AI Food Parser, allows natural language input for macronutrient estimation.
 *   **CORS Configuration**: Carefully configured to allow requests only from the specified frontend URL, enhancing security by preventing unauthorized cross-origin access.
 
 ## System Design
@@ -71,7 +71,7 @@ The backend, powered by **FastAPI**, serves as the application's API layer. Its 
 *   **Authentication & Authorization**: Secures endpoints using JWTs, verifying user identity and permissions. Passwords are securely hashed with `bcrypt`.
 *   **Business Logic**: Processes requests, applies application-specific rules, and orchestrates data operations.
 *   **Database Interaction**: Communicates with MongoDB using `Motor` (an asynchronous driver) for efficient data storage and retrieval.
-*   **AI Integration**: Acts as a proxy for AI services, forwarding user requests (e.g., for food parsing) to external LLMs via `emergentintegrations` and returning the processed results.
+*   **AI Integration**: Acts as a proxy for AI services, forwarding user requests (e.g., for food parsing) to `Google Gemini` and returning the processed results.
 *   **CORS Management**: Configured to allow secure cross-origin requests from the frontend application.
 
 ### 3. Data Storage (Database)
@@ -164,7 +164,7 @@ cd "vibe-coded app" # Navigate into the project directory
 
 5.  **Run the backend server**:
     ```bash
-    uvicorn server:app --reload
+    uvicorn server: app --reload
     ```
     The backend API will be available at `http://localhost:8000`.
 
@@ -266,7 +266,7 @@ cd "vibe-coded app" # Navigate into the project directory
     MONGO_URL="mongodb://localhost:27017/" # Your MongoDB connection string
     DB_NAME="prototask_db" # Name of your MongoDB database
     JWT_SECRET="your_super_secret_jwt_key" # **CRITICAL: Change this to a strong, random key**
-    EMERGENT_LLM_KEY="your_emergent_llm_api_key" # Required for AI food parsing. Obtain from Emergent Universal LLM.
+    GOOGLE_GEMINI_API_KEY="your_google_gemini_api_key" # Required for AI food parsing.
     FRONTEND_URL="http://localhost:3000" # The URL where your frontend will be running
     ADMIN_EMAIL="admin@example.com" # Optional: Default admin user email for seeding
     ADMIN_PASSWORD="admin123" # Optional: Default admin user password for seeding
