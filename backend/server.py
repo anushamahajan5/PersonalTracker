@@ -15,6 +15,7 @@ from datetime import datetime, timezone, timedelta, date
 from typing import Optional, List, Literal
 
 import re # Import for regex
+import google.generativeai as genai
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response
 from fastapi.responses import StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
@@ -590,26 +591,36 @@ async def protein_history(user: dict = Depends(get_current_user), days: int = 14
 
 @api.post("/protein/ai-parse")
 async def ai_parse(body: AIFoodIn, user: dict = Depends(get_current_user)):
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
-    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="AI not configured")
-    sys_msg = ("You are a nutrition expert. Given a short description of food, respond ONLY with valid JSON "
-               'in this exact schema: {"food_name": str, "protein_g": number, "carbs_g": number, "fats_g": number, "calories": number}. '
-               "Estimate realistic values. No prose, no markdown fences.")
-    chat = LlmChat(api_key=api_key, session_id=f"ai-food-{user['id']}",
-                   system_message=sys_msg).with_model("anthropic", "claude-sonnet-4-5-20250929")
+    
+    # Configure Gemini
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash') # Or 'gemini-1.5-pro'
+
+    sys_msg = (
+        "You are a nutrition expert. Given a short description of food, respond ONLY with valid JSON "
+        'in this exact schema: {"food_name": str, "protein_g": number, "carbs_g": number, "fats_g": number, "calories": number}. '
+        "Estimate realistic values. Do not include markdown formatting or conversational text."
+    )
+
     try:
-        reply = await chat.send_message(UserMessage(text=body.text))
-        text = reply.strip()
-        if text.startswith("```"):
-            text = text.strip("`")
-            if text.lower().startswith("json"):
-                text = text[4:]
+        # Combine system prompt with user input
+        prompt = f"{sys_msg}\n\nFood: {body.text}"
+        response = model.generate_content(prompt)
+        
+        text = response.text.strip()
+        
+        # Clean up any potential markdown remnants if the model ignores the instruction
+        text = text.replace("```json", "").replace("```", "").strip()
+        
         s, e = text.find("{"), text.rfind("}")
         if s == -1 or e == -1:
             raise ValueError("No JSON in LLM response")
+            
         data = json.loads(text[s:e + 1])
+        
         return {
             "food_name": str(data.get("food_name", body.text))[:120],
             "protein_g": float(data.get("protein_g", 0) or 0),
@@ -619,7 +630,7 @@ async def ai_parse(body: AIFoodIn, user: dict = Depends(get_current_user)):
         }
     except Exception as e:
         logging.exception("AI parse failed")
-        raise HTTPException(status_code=502, detail=f"AI parse failed: {e}")
+        raise HTTPException(status_code=502, detail=f"AI parse failed: {str(e)}")
 
 
 # -------- Gym --------
@@ -1116,29 +1127,38 @@ async def protein_history(user: dict = Depends(get_current_user), days: int = 14
         out.append(by_day.get(d, {"date": d, "protein_g": 0, "carbs_g": 0, "fats_g": 0, "calories": 0}))
     return out
 
-
 @api.post("/protein/ai-parse")
 async def ai_parse(body: AIFoodIn, user: dict = Depends(get_current_user)):
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
-    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="AI not configured")
-    sys_msg = ("You are a nutrition expert. Given a short description of food, respond ONLY with valid JSON "
-               'in this exact schema: {"food_name": str, "protein_g": number, "carbs_g": number, "fats_g": number, "calories": number}. '
-               "Estimate realistic values. No prose, no markdown fences.")
-    chat = LlmChat(api_key=api_key, session_id=f"ai-food-{user['id']}",
-                   system_message=sys_msg).with_model("anthropic", "claude-sonnet-4-5-20250929")
+    
+    # Configure Gemini
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash') # Or 'gemini-1.5-pro'
+
+    sys_msg = (
+        "You are a nutrition expert. Given a short description of food, respond ONLY with valid JSON "
+        'in this exact schema: {"food_name": str, "protein_g": number, "carbs_g": number, "fats_g": number, "calories": number}. '
+        "Estimate realistic values. Do not include markdown formatting or conversational text."
+    )
+
     try:
-        reply = await chat.send_message(UserMessage(text=body.text))
-        text = reply.strip()
-        if text.startswith("```"):
-            text = text.strip("`")
-            if text.lower().startswith("json"):
-                text = text[4:]
+        # Combine system prompt with user input
+        prompt = f"{sys_msg}\n\nFood: {body.text}"
+        response = model.generate_content(prompt)
+        
+        text = response.text.strip()
+        
+        # Clean up any potential markdown remnants if the model ignores the instruction
+        text = text.replace("```json", "").replace("```", "").strip()
+        
         s, e = text.find("{"), text.rfind("}")
         if s == -1 or e == -1:
             raise ValueError("No JSON in LLM response")
+            
         data = json.loads(text[s:e + 1])
+        
         return {
             "food_name": str(data.get("food_name", body.text))[:120],
             "protein_g": float(data.get("protein_g", 0) or 0),
@@ -1148,8 +1168,7 @@ async def ai_parse(body: AIFoodIn, user: dict = Depends(get_current_user)):
         }
     except Exception as e:
         logging.exception("AI parse failed")
-        raise HTTPException(status_code=502, detail=f"AI parse failed: {e}")
-
+        raise HTTPException(status_code=502, detail=f"AI parse failed: {str(e)}")
 
 # -------- Gym --------
 @api.get("/gym/sessions")
