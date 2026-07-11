@@ -156,7 +156,7 @@ cd "vibe-coded app" # Navigate into the project directory
     MONGO_URL="mongodb://localhost:27017/" # Your MongoDB connection string
     DB_NAME="prototask_db" # Name of your MongoDB database
     JWT_SECRET="your_super_secret_jwt_key" # **CRITICAL: Change this to a strong, random key**
-    EMERGENT_LLM_KEY="your_emergent_llm_api_key" # Required for AI food parsing. Obtain from Emergent Universal LLM.
+    GOOGLE_API_KEY="your_actual_api_key_here"
     FRONTEND_URL="http://localhost:3000" # The URL where your frontend will be running
     ADMIN_EMAIL="admin@example.com" # Optional: Default admin user email for seeding
     ADMIN_PASSWORD="admin123" # Optional: Default admin user password for seeding
