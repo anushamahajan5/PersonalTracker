@@ -19,20 +19,24 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [d, setD] = useState(null);
   const [insights, setInsights] = useState(null);
+  const [proteinInput, setProteinInput] = useState("");
+  const [proteinSubmitting, setProteinSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const loadDashboard = async () => {
+    const [dashboardRes, insightsRes] = await Promise.all([
+      api.get("/dashboard"),
+      api.get("/insights/weekly")
+    ]);
+    setD(dashboardRes.data);
+    setInsights(insightsRes.data);
+  };
+
   useEffect(() => {
     if (user) {
-      Promise.all([
-        api.get("/dashboard"),
-        api.get("/insights/weekly")
-      ])
-        .then(([dashboardRes, insightsRes]) => {
-          setD(dashboardRes.data);
-          setInsights(insightsRes.data);
-          setLoading(false);
-        })
+      loadDashboard()
+        .then(() => setLoading(false))
         .catch(err => {
           setError("Failed to load dashboard data.");
           setLoading(false);
@@ -40,6 +44,27 @@ export default function Dashboard() {
         });
     }
   }, [user]);
+
+  const logProtein = async (e) => {
+    e.preventDefault();
+    const amount = Number(proteinInput);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+
+    setProteinSubmitting(true);
+    try {
+      await api.post("/protein/entries", {
+        name: "Dashboard entry",
+        protein_g: amount,
+      });
+      setProteinInput("");
+      await loadDashboard();
+    } catch (err) {
+      setError("Failed to log protein.");
+      console.error("Protein log error:", err);
+    } finally {
+      setProteinSubmitting(false);
+    }
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-[hsl(var(--muted-foreground))]">Loading…</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center text-[hsl(var(--destructive))]">{error}</div>;
@@ -84,6 +109,27 @@ export default function Dashboard() {
             <div className="h-full bg-white transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%` }} data-testid="protein-progress-bar" />
           </div>
           <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">{pct}% of daily goal</p>
+          <form onSubmit={logProtein} className="mt-4 flex gap-2">
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={proteinInput}
+              onChange={(e) => setProteinInput(e.target.value)}
+              placeholder="Add protein (g)"
+              className="min-w-0 flex-1 h-9 px-3 rounded-md bg-[hsl(var(--background))] border outline-none"
+              aria-label="Protein amount in grams"
+              data-testid="dashboard-protein-input"
+            />
+            <button
+              type="submit"
+              disabled={proteinSubmitting || !proteinInput}
+              className="h-9 px-3 rounded-md bg-white text-black text-sm font-medium disabled:opacity-60"
+              data-testid="dashboard-protein-submit"
+            >
+              {proteinSubmitting ? "Adding..." : "Add"}
+            </button>
+          </form>
         </Card>
 
         <Card testid="stat-habits">
